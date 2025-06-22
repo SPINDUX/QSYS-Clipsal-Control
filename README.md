@@ -1,8 +1,8 @@
-# Dynalite Envision Gateway
+# Clipsal C-BUS Serial
 
 See [Change Log](/CHANGELOG.md)
 
-This is a Q-SYS Plugin for Dynalite Envision Gateways. This Plugin can use either ***DyNet 1*** or the ***DyNet Text Protocol***.
+This is a Q-SYS Plugin for Clipsal C-BUS Serial connections. This Plugin can use either ***DyNet 1*** or the ***DyNet Text Protocol***.
 
 > Bug reports and feature requests should be sent to Jason Foord (jf@tag.com.au).
 
@@ -18,7 +18,7 @@ The protocol to use.
 
 > DyNet 1 | DyNet Text
 
-> The Protocol of the Envision Gateway is set under the *Port Editor* tab in *Dynalite System Builder*
+> The Protocol of the Envision Gateway is set under the *Port Editor* tab in *Clipsal Toolkit*
 
 #### Enable Polling
 
@@ -107,7 +107,7 @@ The Area to control. Leave at '0' if unallocated.
 
 > DyNet 1 only supports areas up to 255. If you are working with DyNet 2 areas greater than 255, you can perform address translations on the DyNet 2 gateway.
 
-> Area information is configured in the *Dynalite System Builder* software.
+> Area information is configured in the *Clipsal Toolkit* software.
 
 ##### Join
 
@@ -115,13 +115,13 @@ Set bits for the `join` byte.
 
 8 seperate bit controls from `0-1`, and a text display that shows the compiled `join` byte.
 
-> :warning: The `join` byte does not target a single matching hex value, but rather acts as a bitwise AND mask. It is important to understand how the `join` byte works before modifying it. This plugin provides a similar interface to *Dynalite System Builder* when setting the `join` byte. 
+> :warning: The `join` byte does not target a single matching hex value, but rather acts as a bitwise AND mask. It is important to understand how the `join` byte works before modifying it. This plugin provides a similar interface to *Clipsal Toolkit* when setting the `join` byte. 
 
 > :warning: Feedback may break when joining areas. If you are having too many issues, consider using a more modern approach to area joining such as base areas.
 
 > DyNet 1 only supports areas up to 255. If you are working with DyNet 2 areas greater than 255, you can perform address translations on the DyNet 2 gateway.
 
-> Area information is configured in the *Dynalite System Builder* software.
+> Area information is configured in the *Clipsal Toolkit* software.
 
 ##### Area Status
 
