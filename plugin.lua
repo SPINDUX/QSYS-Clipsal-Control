@@ -98,8 +98,6 @@ if Controls then
 
   --[[ #include "src/runtime/eventhandlers.lua" ]]
 
-  DisableTcpControls((Properties["Connection Type"].Value == 'Serial'))
-  
   Connect()
 
 end

@@ -1,22 +1,5 @@
 local count = props["Area Slots"].Value
 
-table.insert(ctrls, {
-    Name = "ip_address",
-    ControlType = "Text",
-    UserPin = true,
-    PinStyle = "Both"
-})
-
-table.insert(ctrls, {
-    Name = "port",
-    ControlType = "Knob",
-    ControlUnit = "Integer",
-    Min = 49152,
-    Max = 65535,
-    DefaultValue = 50000,
-    UserPin = true,
-    PinStyle = "Both"
-})
 
 table.insert(ctrls, {
     Name = "device_status",
