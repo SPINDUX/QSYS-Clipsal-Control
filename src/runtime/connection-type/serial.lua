@@ -99,5 +99,25 @@ function Send(data)
   if (isDyNetText) then command = command .. '\r' end
   
   serial:Write(command)
-  
+
+end
+
+-- Queue utilities for C-BUS commands
+local function QueueCommand(cmd)
+  table.insert(commandQueue, cmd)
+  if #commandQueue == 1 then
+    queueTimer:Start(0)
+  end
+end
+
+function SendOn(group)
+  QueueCommand(BuildOn(group))
+end
+
+function SendOff(group)
+  QueueCommand(BuildOff(group))
+end
+
+function SendRamp(group, level, rate)
+  QueueCommand(BuildRamp(group, level, rate))
 end
