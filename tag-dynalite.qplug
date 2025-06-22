@@ -55,8 +55,7 @@ function GetProperties()
       Name = "Protocol",
       Type = "enum",
       Choices = {
-        "DyNet 1",
-        "DyNet Text"
+        "DyNet 1"
       },
       Value = "DyNet 1"
     },
@@ -137,8 +136,8 @@ end
 -- Optional function to update available properties when properties are altered by the user
 function RectifyProperties(props)
   props["Logical Channels"].IsHidden = props["Enable Logical Channels"].Value == "No"
-  props["Enable Polling"].IsHidden = props["Protocol"].Value == "DyNet Text"
-  props["Poll Rate (s)"].IsHidden = props["Enable Polling"].Value == "No" or props["Protocol"].Value == "DyNet Text"
+  props["Enable Polling"].IsHidden = false
+  props["Poll Rate (s)"].IsHidden = props["Enable Polling"].Value == "No"
   props["Preset Recall Mode"].IsHidden = props["Protocol"].Value ~= "DyNet 1"
   -- props["Connection Type"].IsHidden = props["DyNet Protocol"].Value == "Text"
   -- if props["DyNet Protocol"].Value == "Text" then
@@ -265,19 +264,14 @@ function GetControls(props)
   end
   
   if props["Enable Logical Channels"].Value == "Yes" then
-  
+
       local min, max
-      if (props['Protocol'].Value == "DyNet Text") then
-          min = 0
-          max = 100
-      elseif (props['Protocol'].Value == "DyNet 1") then
-          if props["Connection Type"].Value == "TCP" then
-              min = 255
-              max = 1
-          elseif props["Connection Type"].Value == "Serial" then
-              min = 255
-              max = 1
-          end
+      if props["Connection Type"].Value == "TCP" then
+          min = 255
+          max = 1
+      elseif props["Connection Type"].Value == "Serial" then
+          min = 255
+          max = 1
       end
   
       for channel = 1, props["Logical Channels"].Value do
@@ -285,7 +279,7 @@ function GetControls(props)
           table.insert(ctrls, {
               Name = string.format("channel_%d", channel),
               ControlType = "Knob",
-              ControlUnit = (props['Protocol'].Value == "DyNet Text") and "Percent" or "Integer",
+              ControlUnit = "Integer",
               Min = min,
               Max = max,
               UserPin = true,
@@ -349,14 +343,14 @@ function GetControlLayout(props)
   
   table.insert(graphics, {
     Type = "Label",
-    Text = (props['Connection Type'].Value == "Serial") and "TCP Controls Disabled" or (props['Protocol'].Value == "DyNet Text") and "DyNet Text Uses Port 23" or "Default Server Port is 50000",
+    Text = (props['Connection Type'].Value == "Serial") and "TCP Controls Disabled" or "Default Server Port is 50000",
     Size = {Defaults.TextBoxSize[1] - 36, 16},
     Position = {Defaults.LabelSize[1] + 36, 206},
     HTextAlign = "Center",
     Font = "Roboto",
     FontSize = 10,
     FontStyle = "Italic"
-  }) 
+  })
   
   table.insert(graphics, {
       Type = "Label",
@@ -620,7 +614,6 @@ if Controls then
   
     ['WhoAreYou'] = {
     
-      ['DyNet Text'] = "WhoAreYou",
       
       ['DyNet 1'] = function()
       
@@ -630,7 +623,6 @@ if Controls then
     
     ['RequestCurrentPresets'] = {
     
-      ['DyNet Text'] = function(area) -- can i do join values with dynet text?
         return string.format("RCP %s", area)
       end,
       
@@ -642,7 +634,6 @@ if Controls then
     
     ['RequestCurrentLevels'] = {
     
-      ['DyNet Text'] = function(channel, area)
         return string.format("RCL %d %s", channel, area)
       end,
       
@@ -654,7 +645,6 @@ if Controls then
     
     ['RecallPreset'] = {
     
-      ['DyNet Text'] = function(preset, area, fade)
         return string.format("p %s %s %s 255", preset, area, fade)
       end,
       
@@ -702,7 +692,6 @@ if Controls then
     
     ['SetLevel'] = {
     
-      ['DyNet Text'] = function(channel, level, area)
         return string.format('CL %d %d %d 200 255', channel, level, area)
       end,
       
@@ -754,7 +743,6 @@ if Controls then
     
     function Connect()
     
-      isDyNetText = (Properties['Protocol'].Value == "DyNet Text")
       
       ResetTimers()
       
@@ -773,9 +761,9 @@ if Controls then
       
       print("User.Info: Connecting Socket...")
       
-      Controls['port'].IsDisabled = isDyNetText
-      
-      sock:Connect(ip_addr, isDyNetText and 23 or math.floor(Controls['port'].Value))
+      Controls['port'].IsDisabled = false
+
+      sock:Connect(ip_addr, math.floor(Controls['port'].Value))
       
     end
     
@@ -804,7 +792,7 @@ if Controls then
       
         SetStatus(0, "Connected")
         
-        if (not isDyNetText) then Begin() end
+        Begin()
         
       elseif evt == TcpSocket.Events.Data then
       
@@ -830,27 +818,15 @@ if Controls then
       if not sock.IsConnected then return print("User.Warning: Socket not Connected") end
       
       local command = ""
-      
-      if (isDyNetText) then
-        
-        print(string.format("Sending ASCII:%s", data))
-        
-        command = data
-        
-      else
-      
-        local hex = ""
-        
-        for i, byte in ipairs(data) do
-          command = command .. string.char(byte)
-          hex = hex .. string.format("[%02X]", byte)
-        end
-        
-        print(string.format("Sending HEX:%s", hex))
-      
+
+      local hex = ""
+
+      for i, byte in ipairs(data) do
+        command = command .. string.char(byte)
+        hex = hex .. string.format("[%02X]", byte)
       end
-      
-      if (isDyNetText) then command = command .. '\r' end
+
+      print(string.format("Sending HEX:%s", hex))
       
       sock:Write(command)
       
@@ -869,7 +845,6 @@ if Controls then
     
     function Connect()
     
-      isDyNetText = (Properties['Protocol'].Value == "DyNet Text")
       
       ResetTimers()
       
@@ -910,7 +885,7 @@ if Controls then
       
         SetStatus(0, "Connected")
         
-        if (not isDyNetText) then Begin() end
+        Begin()
         
       elseif evt == SerialPorts.Events.Data then
       
@@ -936,27 +911,15 @@ if Controls then
       if not serial.IsOpen then return print("User.Warning: Serial Port not Connected") end
       
       local command = ""
-      
-      if (isDyNetText) then
-        
-        print(string.format("Sending ASCII:%s", data))
-        
-        command = data
-        
-      else
-      
-        local hex = ""
-        
-        for i, byte in ipairs(data) do
-          command = command .. string.char(byte)
-          hex = hex .. string.format("[%02X]", byte)
-        end
-        
-        print(string.format("Sending HEX:%s", hex))
-      
+
+      local hex = ""
+
+      for i, byte in ipairs(data) do
+        command = command .. string.char(byte)
+        hex = hex .. string.format("[%02X]", byte)
       end
-      
-      if (isDyNetText) then command = command .. '\r' end
+
+      print(string.format("Sending HEX:%s", hex))
       
       serial:Write(command)
       
@@ -1187,42 +1150,7 @@ if Controls then
       for i = 1, data:len() do hex = hex .. string.format("[%02X]", string.byte(data:sub(i, i))) end
   
       if (not data) then return end
-  
-      if (isDyNetText) then
-  
-          -- print(string.format("Data:%s", data))
-  
-          if data:find("Telnet Connection Established") then
-  
-              Enqueue('ReplyOK 0')
-              Enqueue('Echo 0')
-              Enqueue('WhoAreYou')
-              Enqueue('Verbose')
-  
-              Begin()
-  
-              return
-          end
-  
-          -- if not (line == "") then print(string.format("Sock.Data: '%s'", line)) end
-  
-          --[[device = line:match("I am (%w+)")
-      if device then Controls["device_type"].String = device end]]
-  
-          --[[box = line:match("Box (%w+)")
-      if box then Controls["box"].String = box end]]
-  
-          --[[version = line:match(", v([%w,]+)")
-      if version then Controls["version"].String = version:gsub(",", ".") end]]
-  
-          preset, area = data:match("Reply with Current Preset (%d+), Area (%d+)")
-          if (preset and area) then SetPresetLEDs(preset, area) end
-  
-          channel, area, target, current = data:match(
-              "Reply with Current Level Ch (%w+), Area (%d+), TargLev (%d+)%%, CurrLev (%d+)%%")
-          if (channel and area and target and current) then UpdateActiveChannels(channel, area, target, current) end
-  
-      else
+
   
           print(string.format("Data:%s", hex))
   
