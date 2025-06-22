@@ -24,13 +24,6 @@ queueTimer.EventHandler = Dequeue
       join = getJoin(area),
     })
     
-    if Properties["Protocol"].Value == "DyNet 1" then
-      -- do eventhandlers for bit controls
-      for byte = 0, 7 do
-        Controls[string.format('join_byte_%d', byte)][area].EventHandler = function()
-          area_props[area].join = getJoin(area)
-        end
-      end
     end
 
 
