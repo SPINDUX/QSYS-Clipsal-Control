@@ -84,22 +84,12 @@ if Controls then
 
   --[[ #include "src/runtime/utility_functions.lua" ]]
 
-  if Properties["Connection Type"].Value == "TCP" then
-
-    --[[ #include "src/runtime/connection-type/tcp.lua" ]]
-
-  elseif Properties["Connection Type"].Value == "Serial" then
-    
-    --[[ #include "src/runtime/connection-type/serial.lua" ]]
-  
-  end
+  --[[ #include "src/runtime/connection-type/serial.lua" ]]
 
   --[[ #include "src/runtime/connection-type/both.lua" ]]
 
   --[[ #include "src/runtime/eventhandlers.lua" ]]
 
-  DisableTcpControls((Properties["Connection Type"].Value == 'Serial'))
-  
   Connect()
 
 end
