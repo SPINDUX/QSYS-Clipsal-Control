@@ -139,3 +139,20 @@ for position, area in ipairs(Controls["area_number"]) do
     end
   end
 end
+
+-- Event callbacks for C-Bus feedback
+function OnCBusOn(addr)
+  print(string.format("CBUS ON %s", addr))
+end
+
+function OnCBusOff(addr)
+  print(string.format("CBUS OFF %s", addr))
+end
+
+function OnCBusRamp(addr, level)
+  print(string.format("CBUS RAMP %s %d", addr, level))
+end
+
+function OnCBusMMI(addr, data)
+  print(string.format("CBUS MMI %s %s", addr or "", data or ""))
+end
