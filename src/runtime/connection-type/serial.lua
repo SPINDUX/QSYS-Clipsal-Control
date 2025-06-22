@@ -8,8 +8,6 @@ serial = SerialPorts[1]
 -----------------
 
 function Connect()
-
-  isDyNetText = (Properties['Protocol'].Value == "DyNet Text")
   
   ResetTimers()
   
@@ -47,10 +45,10 @@ end
 serial.EventHandler = function(port, evt)
 
   if evt == SerialPorts.Events.Connected then
-  
+
     SetStatus(0, "Connected")
-    
-    if (not isDyNetText) then Begin() end
+
+    Begin()
     
   elseif evt == SerialPorts.Events.Data then
   
@@ -77,26 +75,14 @@ function Send(data)
   
   local command = ""
   
-  if (isDyNetText) then
-    
-    print(string.format("Sending ASCII:%s", data))
-    
-    command = data
-    
-  else
-  
-    local hex = ""
-    
-    for i, byte in ipairs(data) do
-      command = command .. string.char(byte)
-      hex = hex .. string.format("[%02X]", byte)
-    end
-    
-    print(string.format("Sending HEX:%s", hex))
-  
+  local hex = ""
+
+  for i, byte in ipairs(data) do
+    command = command .. string.char(byte)
+    hex = hex .. string.format("[%02X]", byte)
   end
-  
-  if (isDyNetText) then command = command .. '\r' end
+
+  print(string.format("Sending HEX:%s", hex))
   
   serial:Write(command)
 

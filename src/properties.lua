@@ -1,5 +1,11 @@
 local props = {
   {
+      Name = "Protocol",
+      Type = "enum",
+      Choices = {"C-BUS"},
+      Value = "C-BUS"
+  },
+  {
     Name = "Enable Polling",
     Type = "enum",
     Choices = {"Yes", "No"},
@@ -11,6 +17,12 @@ local props = {
       Min  = 60,
       Max = 1800,
       Value = 600
+  },
+  {
+      Name = "Connection Type",
+      Type = "enum",
+      Choices = {"TCP", "Serial"},
+      Value = "TCP"
   },
   {
       Name = "Area Slots",

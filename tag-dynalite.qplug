@@ -55,10 +55,9 @@ function GetProperties()
       Name = "Protocol",
       Type = "enum",
       Choices = {
-        "DyNet 1",
-        "DyNet Text"
+        "C-BUS"
       },
-      Value = "DyNet 1"
+      Value = "C-BUS"
     },
     {
       Name = "Enable Polling",
@@ -137,11 +136,9 @@ end
 -- Optional function to update available properties when properties are altered by the user
 function RectifyProperties(props)
   props["Logical Channels"].IsHidden = props["Enable Logical Channels"].Value == "No"
-  props["Enable Polling"].IsHidden = props["Protocol"].Value == "DyNet Text"
-  props["Poll Rate (s)"].IsHidden = props["Enable Polling"].Value == "No" or props["Protocol"].Value == "DyNet Text"
-  props["Preset Recall Mode"].IsHidden = props["Protocol"].Value ~= "DyNet 1"
-  -- props["Connection Type"].IsHidden = props["DyNet Protocol"].Value == "Text"
-  -- if props["DyNet Protocol"].Value == "Text" then
+  props["Enable Polling"].IsHidden = false
+  props["Poll Rate (s)"].IsHidden = props["Enable Polling"].Value == "No"
+  props["Preset Recall Mode"].IsHidden = false
   --   props["Connection Type"].Value = "TCP"
   -- end
   return props
@@ -206,30 +203,6 @@ function GetControls(props)
       Count = count
   })
   
-  if props["Protocol"].Value == "DyNet 1" then
-      -- should be an array of 8 buttons to set bits
-      for byte = 0, 7 do
-          table.insert(ctrls, {
-              Name = string.format("join_byte_%s", byte),
-              ControlType = "Knob",
-              ControlUnit = "Integer",
-              Min = 0,
-              Max = 1,
-              DefaultValue = 1,
-              UserPin = true,
-              PinStyle = "Both",
-              Count = count
-          })
-      end
-  
-      table.insert(ctrls, {
-          Name = "join_hex",
-          ControlType = "Text",
-          UserPin = true,
-          PinStyle = "Output",
-          Count = count
-      })
-  end
   
   for preset = 1, props["Presets"].Value do
   
@@ -265,19 +238,14 @@ function GetControls(props)
   end
   
   if props["Enable Logical Channels"].Value == "Yes" then
-  
+
       local min, max
-      if (props['Protocol'].Value == "DyNet Text") then
-          min = 0
-          max = 100
-      elseif (props['Protocol'].Value == "DyNet 1") then
-          if props["Connection Type"].Value == "TCP" then
-              min = 255
-              max = 1
-          elseif props["Connection Type"].Value == "Serial" then
-              min = 255
-              max = 1
-          end
+      if props["Connection Type"].Value == "TCP" then
+          min = 255
+          max = 1
+      elseif props["Connection Type"].Value == "Serial" then
+          min = 255
+          max = 1
       end
   
       for channel = 1, props["Logical Channels"].Value do
@@ -285,7 +253,7 @@ function GetControls(props)
           table.insert(ctrls, {
               Name = string.format("channel_%d", channel),
               ControlType = "Knob",
-              ControlUnit = (props['Protocol'].Value == "DyNet Text") and "Percent" or "Integer",
+              ControlUnit = "Integer",
               Min = min,
               Max = max,
               UserPin = true,
@@ -349,14 +317,14 @@ function GetControlLayout(props)
   
   table.insert(graphics, {
     Type = "Label",
-    Text = (props['Connection Type'].Value == "Serial") and "TCP Controls Disabled" or (props['Protocol'].Value == "DyNet Text") and "DyNet Text Uses Port 23" or "Default Server Port is 50000",
+    Text = (props['Connection Type'].Value == "Serial") and "TCP Controls Disabled" or "Default Server Port is 50000",
     Size = {Defaults.TextBoxSize[1] - 36, 16},
     Position = {Defaults.LabelSize[1] + 36, 206},
     HTextAlign = "Center",
     Font = "Roboto",
     FontSize = 10,
     FontStyle = "Italic"
-  }) 
+  })
   
   table.insert(graphics, {
       Type = "Label",
@@ -451,56 +419,6 @@ function GetControlLayout(props)
     Position = {Defaults.LabelSize[1] + 41, starting_depth + 22},
   }
   
-  if props["Protocol"].Value == "DyNet 1" then
-      table.insert(graphics, {
-          Type = "Label",
-          Text = "Join",
-          Size = Defaults.LabelSize,
-          Position = {0, starting_depth + 42},
-          HTextAlign = "Left",
-          Font = Defaults.Font,
-          FontSize = Defaults.FontSize,
-      })
-  
-      for byte = 0, 7 do
-          layout[string.format("join_byte_%s %d", byte, page_index)] = {
-              PrettyName = string.format("Area Slot %d~Join Byte %s", page_index, byte),
-              Style = "Text",
-              TextBoxStyle = "Normal",
-              Size = {20, 16},
-              Position = {Defaults.LabelSize[1] + (byte * 22), starting_depth + 42},
-          }
-      end
-  
-      layout[string.format("join_hex %d", page_index)] = {
-          PrettyName = string.format("Area Slot %d~Join Hex", page_index),
-          Style = "Text",
-          TextBoxStyle = "Normal",
-          Color = {194, 194, 194},
-          IsReadOnly = true,
-          Size = {52, 16},
-          Position = {Defaults.LabelSize[1] + (8 * 22), starting_depth + 42},
-      }
-  end
-  
-  -- table.insert(graphics, {
-  --     Type = "Label",
-  --     Text = "Default Join ID is 255",
-  --     Size = {Defaults.TextBoxSize[1] - 36, 16},
-  --     Position = {Defaults.LabelSize[1] + 36, starting_depth + 42},
-  --     HTextAlign = "Center",
-  --     Font = "Roboto",
-  --     FontSize = 10,
-  --     FontStyle = "Italic"
-  -- }) 
-  
-  local alt = true
-  local x = 0
-  
-  table.insert(graphics, {
-      Type = "Svg",
-      Image = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE4LjEuMSwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJDYXBhXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIwIDAgMTQuNzA3IDE0LjcwNyIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTQuNzA3IDE0LjcwNzsiIHhtbDpzcGFjZT0icHJlc2VydmUiPg0KPGc+DQoJPHJlY3QgeD0iNi4yNzUiIHk9IjAiIHN0eWxlPSJmaWxsOiMwMzAxMDQ7IiB3aWR0aD0iMi4xNTgiIGhlaWdodD0iMTQuNzA3Ii8+DQo8L2c+DQoNCjwvc3ZnPg0K",
-      Position = {max_width , 0},
       Size = {20, max_depth}
   })
   
@@ -620,97 +538,35 @@ if Controls then
   
     ['WhoAreYou'] = {
     
-      ['DyNet Text'] = "WhoAreYou",
       
-      ['DyNet 1'] = function()
+      ['C-BUS'] = function()
       
       end
       
     },
     
-    ['RequestCurrentPresets'] = {
-    
-      ['DyNet Text'] = function(area) -- can i do join values with dynet text?
-        return string.format("RCP %s", area)
-      end,
-      
-      ['DyNet 1'] = function(area, join)
-        return GeneratePacket({0x1C, tonumber(area), 0x00, 0x63, 0x00, 0x00, join})
-      end
-      
-    },
+      ['RequestCurrentPresets'] = {
+        ['C-BUS'] = function(area)
+          return string.format('RCP %s', area)
+        end
+      },
     
     ['RequestCurrentLevels'] = {
-    
-      ['DyNet Text'] = function(channel, area)
-        return string.format("RCL %d %s", channel, area)
-      end,
-      
-      ['DyNet 1'] = function(channel, area, join)
-        return GeneratePacket({0x1C, tonumber(area), tonumber(channel) - 1, 0x61, 0x00, 0x00, join})
-      end
-      
-    },
-    
-    ['RecallPreset'] = {
-    
-      ['DyNet Text'] = function(preset, area, fade)
-        return string.format("p %s %s %s 255", preset, area, fade)
-      end,
-      
-      ['DyNet 1'] = function(preset, area, fade, join)
-        local fade = bitstring.pack("16:int", (tonumber(fade) * 0.05))
-        local hi, low = fade:sub(1, 1), fade:sub(2, 2)
-  
-        if(Properties['Preset Recall Mode'].Value == 'Linear') then 
-          return GeneratePacket({0x1C, tonumber(area), tonumber(preset) - 1, 0x65, string.byte(low), string.byte(hi), join})
+        ['C-BUS'] = function(channel, area)
+          return string.format('RCL %d %s', channel, area)
         end
-        
-        --print( string.format( "[%X][%X]", string.byte(low), string.byte(hi) ) )
-        local opcodes = {
-          0x00,
-          0x01,
-          0x02,
-          0x03,
-          0x0A,
-          0x0B,
-          0x0C,
-          0x0D
-        }
-        
-        -- preset = preset - 1
-        local opcode
-        local offset
-        local divisions = math.floor(preset / 8)
-        
-        opcode = preset - (divisions * 8)
-        
-        if (opcode == 0) then 
-          opcode = 8
-          offset = divisions - 1
-        else 
-          offset = divisions
-        end 
-  
-        opcode = opcodes[opcode]
-  
-        return GeneratePacket({0x1C, tonumber(area), string.byte(low), opcode, string.byte(hi), offset, join})
-        
-      end
-      
-    },
-    
-    ['SetLevel'] = {
-    
-      ['DyNet Text'] = function(channel, level, area)
-        return string.format('CL %d %d %d 200 255', channel, level, area)
-      end,
-      
-      ['DyNet 1'] = function(channel, level, area, join)
-        return GeneratePacket({0x1C, tonumber(area), tonumber(channel) - 1, 0x71, tonumber(level), 0x05, join})
-      end
-      
-    },
+      },
+
+      ['RecallPreset'] = {
+        ['C-BUS'] = function(preset, area, fade)
+          return string.format('p %s %s %s 255', preset, area, fade)
+        end
+      },
+      ['SetLevel'] = {
+        ['C-BUS'] = function(channel, level, area)
+          return string.format('CL %d %d %d 200 255', channel, level, area)
+        end
+      },
     
   }
 
@@ -725,20 +581,8 @@ if Controls then
   end
   
   function getJoin(position)
-    if Properties["Protocol"].Value ~= "DyNet 1" then return 0xFF end
-    local join
-    local bits = ''
-  
-    for byte = 0, 7 do
-      local bit = Controls[string.format('join_byte_%d', byte)][position].String
-      bits = bits .. bit
-    end
-  
-    print(bits)
-    join = string.byte( bitstring.frombinstream(bits) )
-    
-    Controls[string.format('join_hex')][position].String = bitstring.hexstream( bitstring.pack('8:int', join) )
-    return join
+    return 0xFF
+  end
   end
 
   if Properties["Connection Type"].Value == "TCP" then
@@ -754,7 +598,6 @@ if Controls then
     
     function Connect()
     
-      isDyNetText = (Properties['Protocol'].Value == "DyNet Text")
       
       ResetTimers()
       
@@ -773,9 +616,9 @@ if Controls then
       
       print("User.Info: Connecting Socket...")
       
-      Controls['port'].IsDisabled = isDyNetText
-      
-      sock:Connect(ip_addr, isDyNetText and 23 or math.floor(Controls['port'].Value))
+      Controls['port'].IsDisabled = false
+
+      sock:Connect(ip_addr, math.floor(Controls['port'].Value))
       
     end
     
@@ -804,7 +647,7 @@ if Controls then
       
         SetStatus(0, "Connected")
         
-        if (not isDyNetText) then Begin() end
+        Begin()
         
       elseif evt == TcpSocket.Events.Data then
       
@@ -830,27 +673,15 @@ if Controls then
       if not sock.IsConnected then return print("User.Warning: Socket not Connected") end
       
       local command = ""
-      
-      if (isDyNetText) then
-        
-        print(string.format("Sending ASCII:%s", data))
-        
-        command = data
-        
-      else
-      
-        local hex = ""
-        
-        for i, byte in ipairs(data) do
-          command = command .. string.char(byte)
-          hex = hex .. string.format("[%02X]", byte)
-        end
-        
-        print(string.format("Sending HEX:%s", hex))
-      
+
+      local hex = ""
+
+      for i, byte in ipairs(data) do
+        command = command .. string.char(byte)
+        hex = hex .. string.format("[%02X]", byte)
       end
-      
-      if (isDyNetText) then command = command .. '\r' end
+
+      print(string.format("Sending HEX:%s", hex))
       
       sock:Write(command)
       
@@ -869,7 +700,6 @@ if Controls then
     
     function Connect()
     
-      isDyNetText = (Properties['Protocol'].Value == "DyNet Text")
       
       ResetTimers()
       
@@ -910,7 +740,7 @@ if Controls then
       
         SetStatus(0, "Connected")
         
-        if (not isDyNetText) then Begin() end
+        Begin()
         
       elseif evt == SerialPorts.Events.Data then
       
@@ -936,27 +766,15 @@ if Controls then
       if not serial.IsOpen then return print("User.Warning: Serial Port not Connected") end
       
       local command = ""
-      
-      if (isDyNetText) then
-        
-        print(string.format("Sending ASCII:%s", data))
-        
-        command = data
-        
-      else
-      
-        local hex = ""
-        
-        for i, byte in ipairs(data) do
-          command = command .. string.char(byte)
-          hex = hex .. string.format("[%02X]", byte)
-        end
-        
-        print(string.format("Sending HEX:%s", hex))
-      
+
+      local hex = ""
+
+      for i, byte in ipairs(data) do
+        command = command .. string.char(byte)
+        hex = hex .. string.format("[%02X]", byte)
       end
-      
-      if (isDyNetText) then command = command .. '\r' end
+
+      print(string.format("Sending HEX:%s", hex))
       
       serial:Write(command)
       
@@ -1180,118 +998,60 @@ if Controls then
   
   end
   
-  function ParseData(data)
-  
-      local hex = ""
-  
-      for i = 1, data:len() do hex = hex .. string.format("[%02X]", string.byte(data:sub(i, i))) end
-  
-      if (not data) then return end
-  
-      if (isDyNetText) then
-  
-          -- print(string.format("Data:%s", data))
-  
-          if data:find("Telnet Connection Established") then
-  
-              Enqueue('ReplyOK 0')
-              Enqueue('Echo 0')
-              Enqueue('WhoAreYou')
-              Enqueue('Verbose')
-  
-              Begin()
-  
-              return
-          end
-  
-          -- if not (line == "") then print(string.format("Sock.Data: '%s'", line)) end
-  
-          --[[device = line:match("I am (%w+)")
-      if device then Controls["device_type"].String = device end]]
-  
-          --[[box = line:match("Box (%w+)")
-      if box then Controls["box"].String = box end]]
-  
-          --[[version = line:match(", v([%w,]+)")
-      if version then Controls["version"].String = version:gsub(",", ".") end]]
-  
-          preset, area = data:match("Reply with Current Preset (%d+), Area (%d+)")
-          if (preset and area) then SetPresetLEDs(preset, area) end
-  
-          channel, area, target, current = data:match(
-              "Reply with Current Level Ch (%w+), Area (%d+), TargLev (%d+)%%, CurrLev (%d+)%%")
-          if (channel and area and target and current) then UpdateActiveChannels(channel, area, target, current) end
-  
-      else
-  
-          print(string.format("Data:%s", hex))
-  
-          if (string.byte(data:sub(1, 1)) == 0xAC) then -- dynet 2 response
-  
-              if (string.byte(data:sub(2, 2)) == 0x03) then
-  
-                  local area = string.byte(data:sub(8, 8))
-                  local preset = string.byte(data:sub(12, 12))
-                  -- local join = string.byte(data:sub(9, 9))
-  
-                  SetPresetLEDs(preset, area)
-  
-              elseif (string.byte(data:sub(2, 2)) == 0x07) then
-  
-                  local area = string.byte(data:sub(8, 8))
-                  local channel = string.byte(data:sub(12, 12))
-                  local target = string.byte(data:sub(16, 16))
-  
-                  -- convert to fader range
-                  target = (((target - 0) * (0 - 255)) / (254 - 0)) + 255
-  
-                  target = math.floor(target)
-  
-                  -- print(target)
-  
-                  UpdateActiveChannels(channel, area, target, current)
-  
-              end
-  
-          elseif (string.byte(data:sub(1, 1)) == 0x1C) then -- dynet 1 logical response
-  
-              local opcode = string.byte(data:sub(4, 4))
-              local area = string.byte(data:sub(2, 2))
-              local join = string.byte(data:sub(7, 7))
-  
-              if (opcode == 0x60) then
-  
-                  local channel = string.byte(data:sub(3, 3)) + 1
-                  local target = string.byte(data:sub(5, 5))
-  
-                  -- convert to fader range
-                  -- target = (((target - 0) * (0 - 255)) / (254 - 0)) + 255
-  
-                  -- target = math.floor(target)
-  
-                  UpdateActiveChannels(channel, area, target, current, join)
-  
-              elseif (opcode == 0x62) then
-                  local preset = string.byte(data:sub(3, 3)) + 1
-                  SetPresetLEDs(preset, area, join)
-  
-              elseif (opcode == 0x65) then
-                  local preset = string.byte(data:sub(3, 3)) + 1
-                  SetPresetLEDs(preset, area, join)
-  
-              elseif ((opcode >= 0x00) and (opcode <= 0x03)) then
-                  local preset = (string.byte(data:sub(6, 6)) * 8) + string.byte(data:sub(4, 4)) + 1
-                  SetPresetLEDs(preset, area, join)
-  
-              elseif ((opcode >= 0x0a) and (opcode <= 0x0d)) then
-                  local preset = (string.byte(data:sub(6, 6)) * 8) + string.byte(data:sub(4, 4)) - 5
-                  SetPresetLEDs(preset, area, join)
-  
-              end
-  
-          end
+  cbusRxBuffer = ""
+
+  -- Event callbacks for C-Bus feedback
+  function OnCBusOn(addr)
+      print(string.format("CBUS ON %s", addr))
+  end
+
+  function OnCBusOff(addr)
+      print(string.format("CBUS OFF %s", addr))
+  end
+
+  function OnCBusRamp(addr, level)
+      print(string.format("CBUS RAMP %s %d", addr, level))
+  end
+
+  function OnCBusMMI(addr, data)
+      print(string.format("CBUS MMI %s %s", addr or "", data or ""))
+  end
+
+  function HandleCBusFrame(line)
+      print(string.format("Data:%s", line))
+
+      if line == string.char(0x06) or line == "ACK" then
+          SetStatus(0, "ACK")
+          return
+      elseif line == string.char(0x15) or line == "NAK" then
+          SetStatus(4, "NAK")
+          return
       end
-  
+
+      local cmd, addr, param = line:match("(%w+)%s+([%d/]+)%s*(%d*)")
+      if not cmd then return end
+
+      if cmd == "ON" then
+          OnCBusOn(addr)
+      elseif cmd == "OFF" then
+          OnCBusOff(addr)
+      elseif cmd == "RAMP" then
+          OnCBusRamp(addr, tonumber(param) or 0)
+      elseif cmd == "MMI" then
+          OnCBusMMI(addr, param)
+      end
+  end
+
+  function ParseData(data)
+      if not data then return end
+      cbusRxBuffer = cbusRxBuffer .. data
+      local pos = cbusRxBuffer:find("\r")
+      while pos do
+          local line = cbusRxBuffer:sub(1, pos - 1)
+          cbusRxBuffer = cbusRxBuffer:sub(pos + 1)
+          HandleCBusFrame(line)
+          pos = cbusRxBuffer:find("\r")
+      end
   end
 
   -------------------------
@@ -1320,17 +1080,9 @@ if Controls then
         canUpdate = {},
         isMovingTimers = {},
         isMoving = {},
-        join = getJoin(area),
+        join = 0xFF,
       })
       
-      if Properties["Protocol"].Value == "DyNet 1" then
-        -- do eventhandlers for bit controls
-        for byte = 0, 7 do
-          Controls[string.format('join_byte_%d', byte)][area].EventHandler = function()
-            area_props[area].join = getJoin(area)
-          end
-        end
-      end
   
   
   
