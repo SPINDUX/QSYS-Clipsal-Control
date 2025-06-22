@@ -1,14 +1,5 @@
 local props = {
   {
-    Name = "Protocol",
-    Type = "enum",
-    Choices = {
-      "DyNet 1",
-      "DyNet Text"
-    },
-    Value = "DyNet 1"
-  },
-  {
     Name = "Enable Polling",
     Type = "enum",
     Choices = {"Yes", "No"},
@@ -20,15 +11,6 @@ local props = {
       Min  = 60,
       Max = 1800,
       Value = 600
-  },
-  {
-    Name = "Connection Type",
-    Type = "enum",
-    Choices = {
-      "TCP",
-      "Serial"
-    },
-    Value = "TCP"
   },
   {
       Name = "Area Slots",
