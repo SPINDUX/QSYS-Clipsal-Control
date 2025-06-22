@@ -62,6 +62,24 @@ local props = {
       Min  = 1,
       Max = 50,
       Value = 4
+  },
+
+  {
+      Name = "Application Hex",
+      Type = "text",
+      Value = "00"
+  },
+  {
+      Name = "Address Hex",
+      Type = "text",
+      Value = "00"
+  },
+  {
+      Name = "Ramp Rate",
+      Type = "integer",
+      Min = 0,
+      Max = 255,
+      Value = 0
   }
 
 }
