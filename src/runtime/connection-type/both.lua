@@ -214,116 +214,41 @@ function GetChannelLevels(area, position)
 
 end
 
-function ParseData(data)
+cbusRxBuffer = ""
 
-    local hex = ""
+function HandleCBusFrame(line)
+    print(string.format("Data:%s", line))
 
-    for i = 1, data:len() do hex = hex .. string.format("[%02X]", string.byte(data:sub(i, i))) end
-
-    if (not data) then return end
-
-    if (isDyNetText) then
-
-        -- print(string.format("Data:%s", data))
-
-        if data:find("Telnet Connection Established") then
-
-            Enqueue('ReplyOK 0')
-            Enqueue('Echo 0')
-            Enqueue('WhoAreYou')
-            Enqueue('Verbose')
-
-            Begin()
-
-            return
-        end
-
-        -- if not (line == "") then print(string.format("Sock.Data: '%s'", line)) end
-
-        --[[device = line:match("I am (%w+)")
-    if device then Controls["device_type"].String = device end]]
-
-        --[[box = line:match("Box (%w+)")
-    if box then Controls["box"].String = box end]]
-
-        --[[version = line:match(", v([%w,]+)")
-    if version then Controls["version"].String = version:gsub(",", ".") end]]
-
-        preset, area = data:match("Reply with Current Preset (%d+), Area (%d+)")
-        if (preset and area) then SetPresetLEDs(preset, area) end
-
-        channel, area, target, current = data:match(
-            "Reply with Current Level Ch (%w+), Area (%d+), TargLev (%d+)%%, CurrLev (%d+)%%")
-        if (channel and area and target and current) then UpdateActiveChannels(channel, area, target, current) end
-
-    else
-
-        print(string.format("Data:%s", hex))
-
-        if (string.byte(data:sub(1, 1)) == 0xAC) then -- dynet 2 response
-
-            if (string.byte(data:sub(2, 2)) == 0x03) then
-
-                local area = string.byte(data:sub(8, 8))
-                local preset = string.byte(data:sub(12, 12))
-                -- local join = string.byte(data:sub(9, 9))
-
-                SetPresetLEDs(preset, area)
-
-            elseif (string.byte(data:sub(2, 2)) == 0x07) then
-
-                local area = string.byte(data:sub(8, 8))
-                local channel = string.byte(data:sub(12, 12))
-                local target = string.byte(data:sub(16, 16))
-
-                -- convert to fader range
-                target = (((target - 0) * (0 - 255)) / (254 - 0)) + 255
-
-                target = math.floor(target)
-
-                -- print(target)
-
-                UpdateActiveChannels(channel, area, target, current)
-
-            end
-
-        elseif (string.byte(data:sub(1, 1)) == 0x1C) then -- dynet 1 logical response
-
-            local opcode = string.byte(data:sub(4, 4))
-            local area = string.byte(data:sub(2, 2))
-            local join = string.byte(data:sub(7, 7))
-
-            if (opcode == 0x60) then
-
-                local channel = string.byte(data:sub(3, 3)) + 1
-                local target = string.byte(data:sub(5, 5))
-
-                -- convert to fader range
-                -- target = (((target - 0) * (0 - 255)) / (254 - 0)) + 255
-
-                -- target = math.floor(target)
-
-                UpdateActiveChannels(channel, area, target, current, join)
-
-            elseif (opcode == 0x62) then
-                local preset = string.byte(data:sub(3, 3)) + 1
-                SetPresetLEDs(preset, area, join)
-
-            elseif (opcode == 0x65) then
-                local preset = string.byte(data:sub(3, 3)) + 1
-                SetPresetLEDs(preset, area, join)
-
-            elseif ((opcode >= 0x00) and (opcode <= 0x03)) then
-                local preset = (string.byte(data:sub(6, 6)) * 8) + string.byte(data:sub(4, 4)) + 1
-                SetPresetLEDs(preset, area, join)
-
-            elseif ((opcode >= 0x0a) and (opcode <= 0x0d)) then
-                local preset = (string.byte(data:sub(6, 6)) * 8) + string.byte(data:sub(4, 4)) - 5
-                SetPresetLEDs(preset, area, join)
-
-            end
-
-        end
+    if line == string.char(0x06) or line == "ACK" then
+        SetStatus(0, "ACK")
+        return
+    elseif line == string.char(0x15) or line == "NAK" then
+        SetStatus(4, "NAK")
+        return
     end
 
+    local cmd, addr, param = line:match("(%w+)%s+([%d/]+)%s*(%d*)")
+    if not cmd then return end
+
+    if cmd == "ON" then
+        OnCBusOn(addr)
+    elseif cmd == "OFF" then
+        OnCBusOff(addr)
+    elseif cmd == "RAMP" then
+        OnCBusRamp(addr, tonumber(param) or 0)
+    elseif cmd == "MMI" then
+        OnCBusMMI(addr, param)
+    end
+end
+
+function ParseData(data)
+    if not data then return end
+    cbusRxBuffer = cbusRxBuffer .. data
+    local pos = cbusRxBuffer:find("\r")
+    while pos do
+        local line = cbusRxBuffer:sub(1, pos - 1)
+        cbusRxBuffer = cbusRxBuffer:sub(pos + 1)
+        HandleCBusFrame(line)
+        pos = cbusRxBuffer:find("\r")
+    end
 end
