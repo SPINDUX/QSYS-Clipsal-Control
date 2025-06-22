@@ -2,9 +2,6 @@
 ----- EventHandlers -----
 -------------------------
 
-Controls["ip_address"].EventHandler = Connect
-Controls["port"].EventHandler = Connect
-Controls["connect"].EventHandler = Connect
 
 queueTimer.EventHandler = Dequeue
 
