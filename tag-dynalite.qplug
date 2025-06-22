@@ -1,12 +1,12 @@
 -- Information block for the plugin
 PluginInfo = {
-  Name = "TAG~Clipsal C-BUS Serial",
-  Version = "2.5",
-  BuildVersion = "2.5.0.1",
+  Name = "Connect NZ~Clipsal C-BUS Serial",
+  Version = "0.1",
+  BuildVersion = "0.1",
   Id = "6add4168-6655-4304-9f33-2a756b485f67",
   Description = "A Q-SYS plugin for Clipsal C-BUS Serial integration.",
   ShowDebug = true,
-  Author = "Jason Foord"
+  Author = "Josh C"
 }
 
 Color = {
@@ -138,6 +138,7 @@ function RectifyProperties(props)
   props["Logical Channels"].IsHidden = props["Enable Logical Channels"].Value == "No"
   props["Enable Polling"].IsHidden = false
   props["Poll Rate (s)"].IsHidden = props["Enable Polling"].Value == "No"
+
   props["Preset Recall Mode"].IsHidden = false
   --   props["Connection Type"].Value = "TCP"
   -- end
@@ -566,8 +567,7 @@ if Controls then
         ['C-BUS'] = function(channel, level, area)
           return string.format('CL %d %d %d 200 255', channel, level, area)
         end
-      },
-    
+      }, 
   }
 
   function ResetTimers()
