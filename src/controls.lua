@@ -36,32 +36,6 @@ table.insert(ctrls, {
     PinStyle = "Output",
     Count = count
 })
-
-if props["Protocol"].Value == "DyNet 1" then
-    -- should be an array of 8 buttons to set bits
-    for byte = 0, 7 do
-        table.insert(ctrls, {
-            Name = string.format("join_byte_%s", byte),
-            ControlType = "Knob",
-            ControlUnit = "Integer",
-            Min = 0,
-            Max = 1,
-            DefaultValue = 1,
-            UserPin = true,
-            PinStyle = "Both",
-            Count = count
-        })
-    end
-
-    table.insert(ctrls, {
-        Name = "join_hex",
-        ControlType = "Text",
-        UserPin = true,
-        PinStyle = "Output",
-        Count = count
-    })
-end
-
 for preset = 1, props["Presets"].Value do
 
     table.insert(ctrls, {
