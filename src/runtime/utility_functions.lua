@@ -3,10 +3,6 @@ function ResetTimers()
   queueTimer:Stop()
 end
 
-function DisableTcpControls(bool)
-  Controls["ip_address"].IsDisabled = bool
-  Controls["port"].IsDisabled = bool
-end
 
 function getJoin(position)
   if Properties["Protocol"].Value ~= "DyNet 1" then return 0xFF end

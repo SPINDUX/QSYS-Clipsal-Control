@@ -25,34 +25,6 @@ table.insert(graphics, {
 
 })
 
-table.insert(graphics, {
-    Type = "Label",
-    Text = "IP Address",
-    Size = Defaults.LabelSize,
-    Position = {0, 186},
-    HTextAlign = "Left",
-    FontSize = Defaults.FontSize
-})
-
-table.insert(graphics, {
-    Type = "Label",
-    Text = "Port",
-    Size = Defaults.LabelSize,
-    Position = {0, 206},
-    HTextAlign = "Left",
-    FontSize = Defaults.FontSize
-})
-
-table.insert(graphics, {
-  Type = "Label",
-  Text = (props['Connection Type'].Value == "Serial") and "TCP Controls Disabled" or (props['Protocol'].Value == "DyNet Text") and "DyNet Text Uses Port 23" or "Default Server Port is 50000",
-  Size = {Defaults.TextBoxSize[1] - 36, 16},
-  Position = {Defaults.LabelSize[1] + 36, 206},
-  HTextAlign = "Center",
-  Font = "Roboto",
-  FontSize = 10,
-  FontStyle = "Italic"
-}) 
 
 table.insert(graphics, {
     Type = "Label",
@@ -71,22 +43,6 @@ table.insert(graphics, {
     HTextAlign = "Left",
     FontSize = Defaults.FontSize,
 })
-
-layout["ip_address"] = {
-    PrettyName = "Device~IP Address",
-    Style = "Text",
-    TextBoxStyle = "Normal",
-    Size = Defaults.TextBoxSize,
-    Position = {max_width-Defaults.TextBoxSize[1], 186}
-}
-
-layout["port"] = {
-  PrettyName = "Device~Port",
-  Style = "Text",
-  TextBoxStyle = "Normal",
-  Size = {36, 16},
-  Position = {max_width-Defaults.TextBoxSize[1], 206}
-}
 
 layout["device_status"] = {
     PrettyName = "Device~Status",
