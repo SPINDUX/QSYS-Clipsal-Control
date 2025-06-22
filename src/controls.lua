@@ -98,17 +98,12 @@ end
 if props["Enable Logical Channels"].Value == "Yes" then
 
     local min, max
-    if (props['Protocol'].Value == "DyNet Text") then
-        min = 0
-        max = 100
-    elseif (props['Protocol'].Value == "DyNet 1") then
-        if props["Connection Type"].Value == "TCP" then
-            min = 255
-            max = 1
-        elseif props["Connection Type"].Value == "Serial" then
-            min = 255
-            max = 1
-        end
+    if props["Connection Type"].Value == "TCP" then
+        min = 255
+        max = 1
+    elseif props["Connection Type"].Value == "Serial" then
+        min = 255
+        max = 1
     end
 
     for channel = 1, props["Logical Channels"].Value do
@@ -116,7 +111,7 @@ if props["Enable Logical Channels"].Value == "Yes" then
         table.insert(ctrls, {
             Name = string.format("channel_%d", channel),
             ControlType = "Knob",
-            ControlUnit = (props['Protocol'].Value == "DyNet Text") and "Percent" or "Integer",
+            ControlUnit = "Integer",
             Min = min,
             Max = max,
             UserPin = true,

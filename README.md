@@ -2,7 +2,7 @@
 
 See [Change Log](/CHANGELOG.md)
 
-This is a Q-SYS Plugin for Clipsal C-BUS Serial connections. This Plugin can use either ***DyNet 1*** or the ***DyNet Text Protocol***.
+This is a Q-SYS Plugin for Clipsal C-BUS Serial connections. It communicates using the C-BUS protocol.
 
 > Bug reports and feature requests should be sent to Jason Foord (jf@tag.com.au).
 
@@ -12,25 +12,21 @@ See [Q-SYS Online Help File - Plugins](https://q-syshelp.qsc.com/#Schematic_Libr
 
 ## Properties
 
-#### DyNet Protocol
+#### Protocol
 
-The protocol to use.
+Communication method used by the plugin.
 
-> DyNet 1 | DyNet Text
+> C-BUS
 
-> The Protocol of the Envision Gateway is set under the *Port Editor* tab in *Clipsal Toolkit*
+> The protocol of the Envision Gateway is set under the *Port Editor* tab in *Clipsal Toolkit*
 
 #### Enable Polling
 
 Whether the plugin will poll current presets and levels.
 
-> Polling is not necessary when using DyNet Text Protocol - it is event driven.
-
 #### Poll Rate (s)
 
 The polling interval.
-
-> Polling is not necessary when using DyNet Text Protocol - it is event driven.
 
 #### Connection Type
 
@@ -62,9 +58,7 @@ Whether to show logical channel controls.
 
 The number of logical channel controls to show in each area slot.
 
-> For DyNet Text, the value range is ***0 - 100%***
-
-> For DyNet 1, the value range is ***255 - 0***
+> The value range is ***255 - 0***
 
 ## Controls
 
@@ -83,9 +77,7 @@ The TCP port to use.
 
 > This is a global control that displays on every page.
 
-> DyNet Text = 23
-
-> DyNet 1 = 49152-65535 | 50000
+> Default port is 50000
 
 #### Device Status
 
