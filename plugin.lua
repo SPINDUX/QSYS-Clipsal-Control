@@ -27,7 +27,7 @@ end
 
 -- The name that will initially display when dragged into a design
 function GetPrettyName(props)
-  return string.format("Dynalite\nEnvision Gateway\n[%s]", PluginInfo.Version)
+  return string.format("Clipsal C-BUS Serial\n[%s]", PluginInfo.Version)
 end
 
 -- Optional function used if plugin has multiple pages
